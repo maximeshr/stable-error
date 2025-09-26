@@ -94,18 +94,20 @@ createStableError(messageOrError: string | Error, options?: StableErrorOptions):
 
 **Options:**
 ```typescript
-interface StableErrorOptions {
+type StableErrorOptions = {
   category?: string;           // Default: 'general'
   metadata?: Metadata;         // Default: {}
   statusCode?: number;         // Default: 500
   severity?: ErrorSeverity;    // Default: 'medium'
-}
+};
 ```
 
 **Returns:**
 An Error object with additional properties for stable error tracking.
 
 #### Error Object Properties
+
+The returned error object extends the standard Error with these additional properties:
 
 ```typescript
 readonly id: string;                    // 8-character stable ID
@@ -199,37 +201,6 @@ try {
 }
 ```
 
-### Error Monitoring
-
-```typescript
-class ErrorMonitor {
-  private errors: Array<Error & { id: string; severity: string }> = [];
-  
-  addError(error: Error & { id: string; severity: string }) {
-    this.errors.push(error);
-    
-    // Check for alert conditions
-    if (error.severity === 'critical') {
-      this.sendAlert(error);
-    }
-  }
-  
-  getErrorStats() {
-    const errorCounts = new Map<string, number>();
-    
-    for (const error of this.errors) {
-      const count = errorCounts.get(error.id) || 0;
-      errorCounts.set(error.id, count + 1);
-    }
-    
-    return errorCounts;
-  }
-  
-  private sendAlert(error: Error & { id: string }) {
-    console.log(`🚨 CRITICAL ERROR: ${error.message} (ID: ${error.id})`);
-  }
-}
-```
 
 ## Type Definitions
 
@@ -245,7 +216,7 @@ type Metadata = Record<string, unknown>;
 
 ### ErrorJSON
 ```typescript
-interface ErrorJSON {
+type ErrorJSON = {
   id: string;
   message: string;
   category: string;
@@ -254,14 +225,8 @@ interface ErrorJSON {
   timestamp: string;
   statusCode: number;
   stack?: string | undefined;
-}
+};
 ```
-
-## Performance
-
-- **ID Generation**: < 1ms per error
-- **Memory Efficient**: Optimized for high-volume error tracking
-- **Scalable**: Handles thousands of errors efficiently
 
 ## Browser Compatibility
 
@@ -280,13 +245,3 @@ interface ErrorJSON {
 ## License
 
 MIT License - see LICENSE file for details.
-
-## Changelog
-
-### 1.0.0
-- Initial release
-- Core StableError functionality
-- Message normalization
-- Metadata filtering
-- Error conversion utilities
-- Comprehensive TypeScript support
