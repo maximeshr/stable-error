@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+          
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        
+      - name: Run tests
+        run: bun test
+        
+      - name: Run linter
+        run: bun run lint
+        
+      - name: Build package
+        run: bun run build
+        
+      - name: Bump version
+        run: |
+          npm version ${{ github.event.inputs.version_type }} --no-git-tag-version
+          echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          
+      - name: Generate changelog
+        run: |
+          echo "## Changes in v${{ env.NEW_VERSION }}" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### Features" >> CHANGELOG.md
+          echo "- " >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### Bug Fixes" >> CHANGELOG.md
+          echo "- " >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### Other Changes" >> CHANGELOG.md
+          echo "- " >> CHANGELOG.md
+          
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json CHANGELOG.md
+          git commit -m "chore(release): v${{ env.NEW_VERSION }}"
+          
+      - name: Create tag
+        run: git tag "v${{ env.NEW_VERSION }}"
+        
+      - name: Push changes
+        run: |
+          git push origin main
+          git push origin "v${{ env.NEW_VERSION }}"
+          
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ env.NEW_VERSION }}"
+          release_name: "Release v${{ env.NEW_VERSION }}"
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ github.event.inputs.version_type == 'prerelease' }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

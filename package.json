@@ -19,7 +19,9 @@
     "test:watch": "bun test --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "pre-publish": "./scripts/pre-publish.sh",
+    "ci": "bun run lint && bun test && bun run build"
   },
   "keywords": [
     "error",
