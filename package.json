@@ -17,11 +17,15 @@
     "build:cjs": "bun build src/index.ts --outdir dist/cjs --format cjs --target node && mv dist/cjs/index.js dist/index.cjs.js && rmdir dist/cjs",
     "test": "bun test",
     "test:watch": "bun test --watch",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "lint": "eslint src/**/*.ts --ext .ts",
+    "lint:fix": "eslint src/**/*.ts --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
+    "check": "bun run lint && bun run format:check",
+    "check:fix": "bun run lint:fix && bun run format",
     "prepublishOnly": "bun run build",
     "pre-publish": "./scripts/pre-publish.sh",
-    "ci": "bun run lint && bun test && bun run build"
+    "ci": "bun run check && bun test && bun run build"
   },
   "keywords": [
     "error",
