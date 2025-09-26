@@ -1,0 +1,57 @@
+{
+  "name": "stable-error",
+  "version": "1.0.0",
+  "description": "A TypeScript library for generating stable, consistent error IDs based on error messages",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun run build:types && bun run build:esm && bun run build:cjs",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "build:esm": "bun build src/index.ts --outdir dist/esm --format esm --target browser && mv dist/esm/index.js dist/index.esm.js && rmdir dist/esm",
+    "build:cjs": "bun build src/index.ts --outdir dist/cjs --format cjs --target node && mv dist/cjs/index.js dist/index.cjs.js && rmdir dist/cjs",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "error",
+    "tracking",
+    "typescript",
+    "stable",
+    "id",
+    "analytics",
+    "dashboard"
+  ],
+  "author": "Maxime Sahroui",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maximeshr/stable-error.git"
+  },
+  "homepage": "https://github.com/maximeshr/stable-error#readme",
+  "bugs": {
+    "url": "https://github.com/maximeshr/stable-error/issues"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
