@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "vite-plus/test";
 import {
   createStableError,
   generateStableId,
@@ -6,7 +6,7 @@ import {
   filterMetadata,
   type StableErrorOptions,
   type ErrorSeverity,
-} from "./stable-error.js";
+} from "./stable-error.ts";
 
 describe("normalizeMessage", () => {
   it("should normalize basic messages", () => {
@@ -15,32 +15,22 @@ describe("normalizeMessage", () => {
   });
 
   it("should replace numbers with NUMBER placeholder", () => {
-    expect(normalizeMessage("User 123 not found")).toBe(
-      "user NUMBER not found",
-    );
+    expect(normalizeMessage("User 123 not found")).toBe("user NUMBER not found");
     expect(normalizeMessage("Error code 404")).toBe("error code NUMBER");
   });
 
   it("should replace UUIDs with UUID placeholder", () => {
     const uuid = "550e8400-e29b-41d4-a716-446655440000";
-    expect(normalizeMessage(`User ${uuid} not found`)).toBe(
-      "user UUID not found",
-    );
+    expect(normalizeMessage(`User ${uuid} not found`)).toBe("user UUID not found");
   });
 
   it("should replace timestamps with TIMESTAMP placeholder", () => {
-    expect(normalizeMessage("Error at 2023-01-01T10:00:00Z")).toBe(
-      "error at TIMESTAMP",
-    );
-    expect(normalizeMessage("Error at 1672531200000")).toBe(
-      "error at TIMESTAMP_MS",
-    );
+    expect(normalizeMessage("Error at 2023-01-01T10:00:00Z")).toBe("error at TIMESTAMP");
+    expect(normalizeMessage("Error at 1672531200000")).toBe("error at TIMESTAMP_MS");
   });
 
   it("should normalize multiple spaces", () => {
-    expect(normalizeMessage("User   123   not   found")).toBe(
-      "user NUMBER not found",
-    );
+    expect(normalizeMessage("User   123   not   found")).toBe("user NUMBER not found");
   });
 
   it("should handle empty or invalid input", () => {
@@ -69,12 +59,8 @@ describe("filterMetadata", () => {
 
   it("should handle empty metadata", () => {
     expect(filterMetadata({})).toEqual({});
-    expect(filterMetadata(null as unknown as Record<string, unknown>)).toEqual(
-      {},
-    );
-    expect(
-      filterMetadata(undefined as unknown as Record<string, unknown>),
-    ).toEqual({});
+    expect(filterMetadata(null as unknown as Record<string, unknown>)).toEqual({});
+    expect(filterMetadata(undefined as unknown as Record<string, unknown>)).toEqual({});
   });
 
   it("should exclude null and undefined values", () => {
