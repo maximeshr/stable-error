@@ -1,7 +1,3 @@
-/**
- * Types for StableError
- */
-
 export type ErrorSeverity = "low" | "medium" | "high" | "critical";
 
 export type Metadata = Record<string, unknown>;
@@ -24,54 +20,33 @@ export type ErrorJSON = {
   stack?: string | undefined;
 };
 
-/**
- * Utility functions for StableError
- */
+type MessageReplacement = readonly [RegExp, string];
 
-/**
- * Normalizes an error message by replacing variable parts with placeholders
- */
 export function normalizeMessage(message: string): string {
   if (!message || typeof message !== "string") {
     return "";
   }
 
+  const messageReplacements: readonly MessageReplacement[] = [
+    [/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "UUID"],
+    [/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?/gi, "TIMESTAMP"],
+    [/\b\d{13}\b/g, "TIMESTAMP_MS"],
+    [/\b\d+\b/g, "NUMBER"],
+  ];
+
   let normalized = message.toLowerCase().trim();
-
-  // Replace common variable patterns with placeholders (order matters!)
-  normalized = normalized.replace(
-    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-    "UUID",
-  );
-  normalized = normalized.replace(
-    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?/gi,
-    "TIMESTAMP",
-  );
-  normalized = normalized.replace(/\b\d{13}\b/g, "TIMESTAMP_MS"); // Must come before NUMBER
-  normalized = normalized.replace(/\b\d+\b/g, "NUMBER");
-
-  // Normalize multiple spaces to single space
-  normalized = normalized.replace(/\s+/g, " ");
-
-  return normalized;
+  for (const [pattern, placeholder] of messageReplacements) {
+    normalized = normalized.replace(pattern, placeholder);
+  }
+  return normalized.replace(/\s+/g, " ");
 }
 
-/**
- * Filters metadata to only include stable keys for ID generation
- */
 export function filterMetadata(metadata: Metadata): Metadata {
   if (!metadata || typeof metadata !== "object") {
     return {};
   }
 
-  const allowedKeys = new Set([
-    "type",
-    "code",
-    "field",
-    "operation",
-    "service",
-    "component",
-  ]);
+  const allowedKeys = new Set(["type", "code", "field", "operation", "service", "component"]);
   const filtered: Metadata = {};
 
   for (const [key, value] of Object.entries(metadata)) {
@@ -83,21 +58,16 @@ export function filterMetadata(metadata: Metadata): Metadata {
   return filtered;
 }
 
-/**
- * Generates a stable error ID from message, category, and metadata
- */
-export function generateStableId(
-  message: string,
-  category: string,
-  metadata: Metadata,
-): string {
-  // Create stable string representation
+function toInt32(value: number): number {
+  return value | 0;
+}
+
+export function generateStableId(message: string, category: string, metadata: Metadata): string {
   const parts = [
     `message:${normalizeMessage(message)}`,
     `category:${(category || "").toLowerCase().trim()}`,
   ];
 
-  // Add filtered metadata (sorted keys for consistency)
   const filtered = filterMetadata(metadata);
   const sortedKeys = Object.keys(filtered).sort();
 
@@ -110,15 +80,12 @@ export function generateStableId(
 
   const stableString = parts.join("|");
 
-  // Simple hash function
   let hash = 0;
   for (let i = 0; i < stableString.length; i++) {
     const char = stableString.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = toInt32((hash << 5) - hash + char);
   }
 
-  // Return first 8 characters as hex
   return Math.abs(hash).toString(16).padStart(8, "0");
 }
 
@@ -157,12 +124,9 @@ export function createStableError(
   const severity = options.severity || "medium";
   const timestamp = new Date().toISOString();
 
-  // Generate stable ID
   const id = generateStableId(message, category, metadata);
 
-  // Create error object
-  const error = new Error(message) as Error &
-    ErrorJSON & { toJSON(): ErrorJSON };
+  const error = new Error(message) as Error & ErrorJSON & { toJSON(): ErrorJSON };
   error.name = "StableError";
   error.id = id;
   error.category = category;
@@ -171,12 +135,10 @@ export function createStableError(
   error.timestamp = timestamp;
   error.statusCode = statusCode;
 
-  // Preserve original stack if available
   if (originalStack) {
     error.stack = originalStack;
   }
 
-  // Add toJSON method
   error.toJSON = function (): ErrorJSON {
     return {
       id: this.id,

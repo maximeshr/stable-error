@@ -13,21 +13,19 @@ A TypeScript library for generating stable, consistent error IDs based on error 
 
 ```bash
 npm install stable-error
-# or
-yarn add stable-error
-# or
-bun add stable-error
 ```
+
+The package is ESM only and requires Node.js 26 or later. Version 1.x remains available for CommonJS and for Node.js 25 or earlier. See [Migrating from 1.x](#migrating-from-1x).
 
 ## Quick Start
 
 ```typescript
-import { createStableError } from 'stable-error';
+import { createStableError } from "stable-error";
 
 // Create a stable error
-const error = createStableError('User not found', {
-  category: 'validation',
-  metadata: { userId: 123, field: 'email' }
+const error = createStableError("User not found", {
+  category: "validation",
+  metadata: { userId: 123, field: "email" },
 });
 
 console.log(error.id); // Always same for "User not found" + validation category
@@ -38,6 +36,7 @@ console.log(error.id); // Always same for "User not found" + validation category
 ### Stable Error IDs
 
 StableError generates consistent 8-character hexadecimal IDs based on:
+
 - **Normalized message**: Variable parts (numbers, UUIDs, timestamps) are replaced with placeholders
 - **Category**: Error grouping category
 - **Filtered metadata**: Only specific metadata keys are used for ID generation
@@ -45,6 +44,7 @@ StableError generates consistent 8-character hexadecimal IDs based on:
 ### Message Normalization
 
 The library automatically normalizes error messages by:
+
 - Converting to lowercase and trimming whitespace
 - Replacing numbers with `NUMBER` placeholder
 - Replacing UUIDs with `UUID` placeholder
@@ -53,14 +53,15 @@ The library automatically normalizes error messages by:
 
 ```typescript
 // These all generate the same ID:
-createStableError('User 123 not found', { category: 'test' });
-createStableError('User 456 not found', { category: 'test' });
-createStableError('USER 789 NOT FOUND', { category: 'test' });
+createStableError("User 123 not found", { category: "test" });
+createStableError("User 456 not found", { category: "test" });
+createStableError("USER 789 NOT FOUND", { category: "test" });
 ```
 
 ### Metadata Filtering
 
 Only these metadata keys are used for stable ID generation:
+
 - `type`
 - `code`
 - `field`
@@ -70,11 +71,11 @@ Only these metadata keys are used for stable ID generation:
 
 ```typescript
 // These generate the same ID (timestamp and userId are ignored):
-createStableError('Error', { 
-  metadata: { field: 'email', timestamp: '2023-01-01', userId: 123 }
+createStableError("Error", {
+  metadata: { field: "email", timestamp: "2023-01-01", userId: 123 },
 });
-createStableError('Error', { 
-  metadata: { field: 'email', timestamp: '2023-12-31', userId: 456 }
+createStableError("Error", {
+  metadata: { field: "email", timestamp: "2023-12-31", userId: 456 },
 });
 ```
 
@@ -89,16 +90,18 @@ createStableError(messageOrError: string | Error, options?: StableErrorOptions):
 ```
 
 **Parameters:**
+
 - `messageOrError`: The error message (string) or existing Error object
 - `options`: Optional configuration object
 
 **Options:**
+
 ```typescript
 type StableErrorOptions = {
-  category?: string;           // Default: 'general'
-  metadata?: Metadata;         // Default: {}
-  statusCode?: number;         // Default: 500
-  severity?: ErrorSeverity;    // Default: 'medium'
+  category?: string; // Default: 'general'
+  metadata?: Metadata; // Default: {}
+  statusCode?: number; // Default: 500
+  severity?: ErrorSeverity; // Default: 'medium'
 };
 ```
 
@@ -121,6 +124,7 @@ readonly timestamp: string;             // ISO timestamp
 #### Methods
 
 ##### `toJSON(): ErrorJSON`
+
 Returns JSON representation of the error:
 
 ```typescript
@@ -140,12 +144,12 @@ const json = error.toJSON();
 #### Usage Examples
 
 ```typescript
-import { createStableError } from 'stable-error';
+import { createStableError } from "stable-error";
 
 // Create from string message
-const error1 = createStableError('User not found', {
-  category: 'validation',
-  metadata: { field: 'email' }
+const error1 = createStableError("User not found", {
+  category: "validation",
+  metadata: { field: "email" },
 });
 
 // Create from existing Error
@@ -153,8 +157,8 @@ try {
   // Some operation
 } catch (err) {
   const stableError = createStableError(err, {
-    category: 'database',
-    metadata: { operation: 'user_lookup' }
+    category: "database",
+    metadata: { operation: "user_lookup" },
   });
 }
 ```
@@ -164,17 +168,17 @@ try {
 ### Basic Error Tracking
 
 ```typescript
-import { createStableError } from 'stable-error';
+import { createStableError } from "stable-error";
 
 // Create errors with consistent IDs
-const error1 = createStableError('User 123 not found', {
-  category: 'validation',
-  metadata: { field: 'email' }
+const error1 = createStableError("User 123 not found", {
+  category: "validation",
+  metadata: { field: "email" },
 });
 
-const error2 = createStableError('User 456 not found', {
-  category: 'validation', 
-  metadata: { field: 'email' }
+const error2 = createStableError("User 456 not found", {
+  category: "validation",
+  metadata: { field: "email" },
 });
 
 console.log(error1.id === error2.id); // true - same normalized message
@@ -188,33 +192,35 @@ try {
   await someAsyncOperation();
 } catch (error) {
   const stableError = createStableError(error, {
-    category: 'api',
-    severity: 'high',
-    metadata: { 
-      endpoint: '/users',
-      method: 'GET'
-    }
+    category: "api",
+    severity: "high",
+    metadata: {
+      endpoint: "/users",
+      method: "GET",
+    },
   });
-  
+
   // Log or track the stable error
   console.log(`Error ID: ${stableError.id}`);
 }
 ```
 
-
 ## Type Definitions
 
 ### ErrorSeverity
+
 ```typescript
-type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
+type ErrorSeverity = "low" | "medium" | "high" | "critical";
 ```
 
 ### Metadata
+
 ```typescript
 type Metadata = Record<string, unknown>;
 ```
 
 ### ErrorJSON
+
 ```typescript
 type ErrorJSON = {
   id: string;
@@ -228,11 +234,45 @@ type ErrorJSON = {
 };
 ```
 
-## Browser Compatibility
+## Requirements
 
-- Modern browsers (ES2018+)
-- Node.js 14+
-- TypeScript 4.5+
+- Node.js 26 or later
+- An ESM loader or bundler. There is no CommonJS entry.
+
+The published types ship with the package. TypeScript is not a peer dependency.
+
+## Migrating from 1.x
+
+`stable-error@1` exposed a CommonJS file at `dist/index.cjs.js` through `main`, and an ESM file through `module`. Version 2.0.0 publishes one ESM entry through `exports`:
+
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  }
+}
+```
+
+`createStableError` and the default export are unchanged.
+
+Replace a CommonJS require with an ESM import:
+
+```js
+import { createStableError } from "stable-error";
+```
+
+A CommonJS file on Node.js 26 can load the same function asynchronously:
+
+```js
+const { createStableError } = await import("stable-error");
+```
+
+Stay on `stable-error@1` when you need a synchronous `require`, or when the process runs on Node.js 25 or earlier.
+
+In TypeScript, set `moduleResolution` to `nodenext`, `node16`, or `bundler`. Delete imports of `dist/index.cjs.js`. You do not need to install TypeScript to use the published types.
 
 ## Contributing
 
@@ -240,7 +280,8 @@ type ErrorJSON = {
 2. Create a feature branch
 3. Make your changes
 4. Add tests
-5. Submit a pull request
+5. Run `vp check` and `vp test`
+6. Submit a pull request
 
 ## License
 

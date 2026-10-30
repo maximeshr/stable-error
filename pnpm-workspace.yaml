@@ -1,0 +1,13 @@
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@1.4.0
+  vite-plus: 1.4.0
+overrides:
+  vite@*: "catalog:"
+  # Same Vitest copy as `vp test` (vite-plus 1.4.0 bundles 5.0.5).
+  # 5.0.4 is GHSA-p458-7748-mcp3; do not float above the bundled runner.
+  vitest@*: "5.0.5"
+peerDependencyRules:
+  allowAny:
+    - vite
+  allowedVersions:
+    vite: "*"
