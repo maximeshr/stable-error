@@ -4,7 +4,9 @@
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`.
 
-The job installs the Vite+ toolchain, then runs `vp check`, `vp run check:version`, `vp test`, and `vp pack` on Ubuntu, macOS, and Windows. Node.js is 26. Ubuntu also runs `pnpm audit --audit-level=high`.
+The job installs the Vite+ toolchain, then runs `vp check`, `vp run check:version`, `vp test`, and `vp pack` on Ubuntu, macOS, and Windows. Node.js is 26. Ubuntu also runs `vp run check:package` and `pnpm audit --audit-level=high`.
+
+A `node-compat` job runs the tests on Node.js 22 and 24 through `vp env exec --node`, and imports the packed library on 22.12.0, the `engines.node` minimum.
 
 Windows is `continue-on-error`, matching the other packages on this stack. A Windows failure is reported and does not block the pull request.
 
