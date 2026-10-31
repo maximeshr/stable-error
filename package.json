@@ -1,6 +1,6 @@
 {
   "name": "stable-error",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A TypeScript library for generating stable, consistent error IDs based on error messages",
   "keywords": [
     "analytics",
