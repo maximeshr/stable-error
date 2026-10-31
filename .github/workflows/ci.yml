@@ -12,6 +12,7 @@ jobs:
   check:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    # Windows is best effort: failures are reported but do not block.
     continue-on-error: ${{ matrix.os == 'windows-latest' }}
     strategy:
       fail-fast: false
@@ -23,9 +24,9 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v7.0.1
-      - uses: voidzero-dev/setup-vp@v1.21.1
+      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version: "26"
+          node-version: "26" # current LTS
           cache: true
       - run: vp install
       - run: vp check
@@ -34,8 +35,36 @@ jobs:
       - run: vp pack
       - name: Import the packed library
         run: node --input-type=module -e "import { createStableError } from './dist/index.mjs'; if (typeof createStableError !== 'function') process.exit(1)"
+      # Checks the tarball npm receives: package.json, files and types.
+      - name: Check the published package
+        if: runner.os == 'Linux'
+        run: vp run check:package
       # Ubuntu only: the Windows job is continue-on-error, so a failure
       # there would not block the pull request. pnpm comes from setup-vp.
       - name: Audit high and critical vulnerabilities
         if: runner.os == 'Linux'
         run: pnpm audit --audit-level=high
+
+  # The dev runtime is pinned to Node 26 (devEngines), but the package supports
+  # every version allowed by engines.node. `vp env exec --node` overrides the pin.
+  node-compat:
+    name: node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22 (latest) runs the toolchain; vite-plus itself needs 22.18 or later.
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version: "26" # current LTS
+          cache: true
+      - run: vp install
+      - run: vp pack
+      - run: vp env exec --node ${{ matrix.node }} vp test
+      # engines.node minimum: the built library must import on it.
+      - name: Smoke test on the minimum supported Node
+        if: matrix.node == '22'
+        run: vp env exec --node 22.12.0 node --input-type=module -e "import { createStableError } from './dist/index.mjs'; if (typeof createStableError !== 'function') process.exit(1)"

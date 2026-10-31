@@ -11,3 +11,6 @@ coverage
 .eslintcache
 .vite/
 .vitest/
+
+# AIDD working docs
+aidd_docs

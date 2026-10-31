@@ -15,7 +15,7 @@ A TypeScript library for generating stable, consistent error IDs based on error 
 npm install stable-error
 ```
 
-The package is ESM only and requires Node.js 26 or later. Version 1.x remains available for CommonJS and for Node.js 25 or earlier. See [Migrating from 1.x](#migrating-from-1x).
+The package is ESM only and requires Node.js 22.12 or later. Version 1.x remains available for CommonJS and for Node.js 22.11 or earlier. See [Migrating from 1.x](#migrating-from-1x).
 
 ## Quick Start
 
@@ -236,7 +236,7 @@ type ErrorJSON = {
 
 ## Requirements
 
-- Node.js 26 or later
+- Node.js 22.12 or later
 - An ESM loader or bundler. There is no CommonJS entry.
 
 The published types ship with the package. TypeScript is not a peer dependency.
@@ -264,13 +264,13 @@ Replace a CommonJS require with an ESM import:
 import { createStableError } from "stable-error";
 ```
 
-A CommonJS file on Node.js 26 can load the same function asynchronously:
+A CommonJS file on Node.js 22.12 or later can load the same function asynchronously:
 
 ```js
 const { createStableError } = await import("stable-error");
 ```
 
-Stay on `stable-error@1` when you need a synchronous `require`, or when the process runs on Node.js 25 or earlier.
+Stay on `stable-error@1` when you need a synchronous `require`, or when the process runs on Node.js 22.11 or earlier.
 
 In TypeScript, set `moduleResolution` to `nodenext`, `node16`, or `bundler`. Delete imports of `dist/index.cjs.js`. You do not need to install TypeScript to use the published types.
 
