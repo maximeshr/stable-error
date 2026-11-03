@@ -1,0 +1,4 @@
+vp check --deny-warnings
+vp test
+vp exec quality-gate deadcode
+vp exec quality-gate duplication

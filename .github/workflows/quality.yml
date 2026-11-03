@@ -1,0 +1,16 @@
+name: Quality
+
+# OKQ quality gate: one report comment per pull request.
+# See https://github.com/maximeshr/quality-gate
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    uses: maximeshr/quality-gate/.github/workflows/reusable-report.yml@v0.1.1
+    permissions:
+      contents: read
+      pull-requests: write

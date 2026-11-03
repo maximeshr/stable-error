@@ -11,3 +11,7 @@ peerDependencyRules:
     - vite
   allowedVersions:
     vite: "*"
+
+allowBuilds:
+  # quality-gate's `prepare` only installs its own git hooks: never run it here.
+  quality-gate: false
