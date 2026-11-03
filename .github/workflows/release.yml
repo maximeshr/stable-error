@@ -1,35 +1,33 @@
 name: Release
 
+# Shared OKQ release flow (https://github.com/maximeshr/quality-gate):
+# - push to canary: open or update the canary -> main release pull request;
+# - push to main: version, CHANGELOG, npm publish (`vp run release`), tag, GitHub release.
+# Keep this file name: it is the npm trusted publisher.
 on:
   push:
-    branches: [main]
+    branches: [canary, main]
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency: release-${{ github.ref }}
 
 permissions:
-  contents: write
-  pull-requests: write
-  # npm provenance / trusted publishing.
-  id-token: write
+  contents: read
 
 jobs:
+  release-pr:
+    if: github.ref_name == 'canary'
+    uses: maximeshr/quality-gate/.github/workflows/reusable-release-pr.yml@v0.3.1
+    permissions:
+      contents: read
+      pull-requests: write
   release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version: "26" # current LTS
-          cache: true
-      - run: vp install
-      - run: vp check
-      - run: vp run check:version
-      - run: vp test
-      - uses: changesets/action@v2.1.2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          version-script: vp run version-packages
-          publish-script: vp run release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+    if: github.ref_name == 'main'
+    uses: maximeshr/quality-gate/.github/workflows/reusable-release.yml@v0.3.1
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    with:
+      publish: true
+    secrets:
+      RELEASE_DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
