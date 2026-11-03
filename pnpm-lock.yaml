@@ -176,9 +176,6 @@ importers:
 
   .:
     devDependencies:
-      '@arethetypeswrong/cli':
-        specifier: ^0.18.5
-        version: 0.18.5
       '@changesets/cli':
         specifier: ^3.0.3
         version: 3.0.3
@@ -191,12 +188,9 @@ importers:
       node:
         specifier: runtime:26.13.0
         version: runtime:26.13.0
-      publint:
-        specifier: ^0.3.25
-        version: 0.3.25
       quality-gate:
-        specifier: github:maximeshr/quality-gate#v0.1.1
-        version: https://codeload.github.com/maximeshr/quality-gate/tar.gz/c2399ff9108e7738900a64cd20f480021d29e07d(conventional-commits-parser@7.1.4)(supports-color@10.2.2)(typescript@7.0.2)
+        specifier: github:maximeshr/quality-gate#v0.3.1
+        version: https://codeload.github.com/maximeshr/quality-gate/tar.gz/2b6e2d98fbf5b0ed960a6698df511283e1e37017(conventional-commits-parser@7.1.4)(supports-color@10.2.2)(typescript@7.0.2)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2219,9 +2213,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  quality-gate@https://codeload.github.com/maximeshr/quality-gate/tar.gz/c2399ff9108e7738900a64cd20f480021d29e07d:
-    resolution: {gitHosted: true, integrity: sha512-r4RIkBVqm7fNqfQKseF07GgzB9jsmsqFCW5ySrRaZHP/7J50vFeHJfL1f6iCXC0l4/Z9Lb9thuB2bTF7d4spHw==, tarball: https://codeload.github.com/maximeshr/quality-gate/tar.gz/c2399ff9108e7738900a64cd20f480021d29e07d}
-    version: 0.1.1
+  quality-gate@https://codeload.github.com/maximeshr/quality-gate/tar.gz/2b6e2d98fbf5b0ed960a6698df511283e1e37017:
+    resolution: {gitHosted: true, integrity: sha512-BvudYQa5gGVzt4e0WMaEQP3+7Za3DEpdhaRDA+NThE4Hf2zwUUEXZRS6hO2FDEZw4zD4t1XnQdmK2orB3zHpZA==, tarball: https://codeload.github.com/maximeshr/quality-gate/tar.gz/2b6e2d98fbf5b0ed960a6698df511283e1e37017}
+    version: 0.3.1
     engines: {node: ^22.18.0 || ^24.11.0 || >=26.0.0}
     hasBin: true
 
@@ -4230,13 +4224,15 @@ snapshots:
       picocolors: 1.1.1
       sade: 1.8.1
 
-  quality-gate@https://codeload.github.com/maximeshr/quality-gate/tar.gz/c2399ff9108e7738900a64cd20f480021d29e07d(conventional-commits-parser@7.1.4)(supports-color@10.2.2)(typescript@7.0.2):
+  quality-gate@https://codeload.github.com/maximeshr/quality-gate/tar.gz/2b6e2d98fbf5b0ed960a6698df511283e1e37017(conventional-commits-parser@7.1.4)(supports-color@10.2.2)(typescript@7.0.2):
     dependencies:
+      '@arethetypeswrong/cli': 0.18.5
       '@commitlint/cli': 21.2.4(conventional-commits-parser@7.1.4)(typescript@7.0.2)
       '@commitlint/config-conventional': 21.2.4
       '@secretlint/secretlint-rule-preset-recommend': 13.0.7
       jscpd: 5.4.1
       knip: 6.42.1
+      publint: 0.3.25
       secretlint: 13.0.7(supports-color@10.2.2)
     transitivePeerDependencies:
       - conventional-commits-filter
