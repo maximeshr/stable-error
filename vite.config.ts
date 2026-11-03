@@ -1,6 +1,9 @@
+import { qualityGate } from "quality-gate/vite";
 import { defineConfig } from "vite-plus";
 
+// OKQ base config (lint, fmt, test coverage, staged); only stable-error's structure is added here.
 export default defineConfig({
+  ...qualityGate,
   pack: {
     entry: ["src/index.ts"],
     format: ["esm"],
@@ -10,16 +13,7 @@ export default defineConfig({
     },
   },
   test: {
+    ...qualityGate.test,
     include: ["src/**/*.test.ts"],
-  },
-  lint: {
-    ignorePatterns: ["dist/**"],
-    options: {
-      typeAware: true,
-      typeCheck: true,
-    },
-  },
-  fmt: {
-    ignorePatterns: ["dist/**", "pnpm-lock.yaml", "CHANGELOG.md"],
   },
 });

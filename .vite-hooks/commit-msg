@@ -1,0 +1,1 @@
+vp exec quality-gate commitlint --edit "$1"
