@@ -1,9 +1,12 @@
 name: CI
 
 on:
+  # Pull requests target canary. The only pull request into main is the release pull request:
+  # its head is canary, already checked by the push run.
   pull_request:
+    branches: [canary]
   push:
-    branches: [main]
+    branches: [canary, main]
 
 permissions:
   contents: read

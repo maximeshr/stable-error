@@ -1,9 +1,12 @@
 name: Quality
 
-# OKQ quality gate: one report comment per pull request.
+# OKQ quality gate: one report comment per pull request, and the changeset check.
 # See https://github.com/maximeshr/quality-gate
 on:
   pull_request:
+    branches: [canary]
+  push:
+    branches: [canary, main]
 
 permissions:
   contents: read
@@ -14,3 +17,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+  changesets:
+    uses: maximeshr/quality-gate/.github/workflows/reusable-changesets.yml@v0.3.1
+    permissions:
+      contents: read
+    secrets:
+      RELEASE_DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}

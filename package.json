@@ -42,7 +42,6 @@
     "dev": "vp pack --watch",
     "prepublishOnly": "vp run build",
     "check:version": "quality-gate check-version",
-    "version-packages": "changeset version",
     "release": "vp pack && vp run check:package && changeset publish",
     "check:package": "quality-gate check-package",
     "prepare": "vp config"
