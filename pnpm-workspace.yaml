@@ -1,6 +1,6 @@
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@1.4.0
-  vite-plus: 1.4.0
+  vite-plus: 1.5.0
 overrides:
   vite@*: "catalog:"
   # Same Vitest copy as `vp test` (vite-plus 1.4.0 bundles 5.0.5).
