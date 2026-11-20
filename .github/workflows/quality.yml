@@ -13,12 +13,12 @@ permissions:
 
 jobs:
   report:
-    uses: maximeshr/quality-gate/.github/workflows/reusable-report.yml@v0.7.0
+    uses: maximeshr/quality-gate/.github/workflows/reusable-report.yml@v0.8.1
     permissions:
       contents: read
       pull-requests: write
   changesets:
-    uses: maximeshr/quality-gate/.github/workflows/reusable-changesets.yml@v0.7.0
+    uses: maximeshr/quality-gate/.github/workflows/reusable-changesets.yml@v0.8.1
     permissions:
       contents: read
     secrets:
