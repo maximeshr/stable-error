@@ -1,7 +1,9 @@
 import { qualityGate } from "quality-gate/vite";
 import { defineConfig } from "vite-plus";
 
-// OKQ base config (lint, fmt, test coverage, staged); only stable-error's structure is added here.
+/**
+ * OKQ base config (lint, fmt, test coverage, staged); only stable-error's structure is added here
+ */
 export default defineConfig({
   ...qualityGate,
   pack: {
