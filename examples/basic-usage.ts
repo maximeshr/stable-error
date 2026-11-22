@@ -3,15 +3,23 @@ import { createStableError } from "../src/index.ts";
 console.log("=== Basic StableError Usage Examples ===\n");
 
 console.log("1. Basic Error Creation:");
+
 const basicError = createStableError("User not found");
+
 console.log("Error ID:", basicError.id);
+
 console.log("Message:", basicError.message);
+
 console.log("Category:", basicError.category);
+
 console.log("Severity:", basicError.severity);
+
 console.log("Timestamp:", basicError.timestamp);
+
 console.log();
 
 console.log("2. Error with Custom Options:");
+
 const customError = createStableError("Database connection failed", {
   category: "database",
   metadata: {
@@ -22,35 +30,50 @@ const customError = createStableError("Database connection failed", {
   statusCode: 503,
   severity: "high",
 });
+
 console.log("Error ID:", customError.id);
+
 console.log("Category:", customError.category);
+
 console.log("Metadata:", customError.metadata);
+
 console.log("Status Code:", customError.statusCode);
+
 console.log("Severity:", customError.severity);
+
 console.log();
 
 console.log("3. Stable ID Generation:");
+
 const error1 = createStableError("User 123 not found", {
   category: "validation",
   metadata: { field: "email" },
 });
+
 const error2 = createStableError("User 456 not found", {
   category: "validation",
   metadata: { field: "email" },
 });
+
 const error3 = createStableError("User 123 not found", {
   category: "validation",
   metadata: { field: "email" },
 });
 
 console.log("Error 1 ID:", error1.id);
+
 console.log("Error 2 ID:", error2.id);
+
 console.log("Error 3 ID:", error3.id);
+
 console.log("Error 1 and 2 have same ID (normalized numbers):", error1.id === error2.id);
+
 console.log("Error 1 and 3 have same ID (identical):", error1.id === error3.id);
+
 console.log();
 
 console.log("4. Message Normalization:");
+
 const messages = [
   "User 123 not found",
   "User 456 not found",
@@ -59,17 +82,21 @@ const messages = [
 ];
 
 const normalizedErrors = messages.map((msg) => createStableError(msg, { category: "test" }));
+
 console.log(
   "All messages normalized to same ID:",
-  normalizedErrors.every((error) => error.id === normalizedErrors[0]!.id),
+  new Set(normalizedErrors.map((error) => error.id)).size === 1,
 );
+
 console.log(
   "Normalized IDs:",
   normalizedErrors.map((e) => e.id),
 );
+
 console.log();
 
 console.log("5. UUID Normalization:");
+
 const uuidMessages = [
   "User 550e8400-e29b-41d4-a716-446655440000 not found",
   "User 6ba7b810-9dad-11d1-80b4-00c04fd430c8 not found",
@@ -77,17 +104,21 @@ const uuidMessages = [
 ];
 
 const uuidErrors = uuidMessages.map((msg) => createStableError(msg, { category: "test" }));
+
 console.log(
   "All UUID messages normalized to same ID:",
-  uuidErrors.every((error) => error.id === uuidErrors[0]!.id),
+  new Set(uuidErrors.map((error) => error.id)).size === 1,
 );
+
 console.log(
   "Normalized IDs:",
   uuidErrors.map((e) => e.id),
 );
+
 console.log();
 
 console.log("6. Timestamp Normalization:");
+
 const timestampMessages = [
   "Error at 2023-01-01T10:00:00Z",
   "Error at 2023-12-31T23:59:59Z",
@@ -98,17 +129,21 @@ const timestampMessages = [
 const timestampErrors = timestampMessages.map((msg) =>
   createStableError(msg, { category: "test" }),
 );
+
 console.log(
   "All timestamp messages normalized to same ID:",
-  timestampErrors.every((error) => error.id === timestampErrors[0]!.id),
+  new Set(timestampErrors.map((error) => error.id)).size === 1,
 );
+
 console.log(
   "Normalized IDs:",
   timestampErrors.map((e) => e.id),
 );
+
 console.log();
 
 console.log("7. Metadata Filtering:");
+
 const metadata1 = {
   field: "email",
   type: "validation",
@@ -132,34 +167,48 @@ console.log(
   "Errors with different non-allowed metadata have same ID:",
   metaError1.id === metaError2.id,
 );
+
 console.log("Error 1 ID:", metaError1.id);
+
 console.log("Error 2 ID:", metaError2.id);
+
 console.log();
 
 console.log("8. Error Conversion:");
+
 try {
   throw new Error("Original error message");
 } catch (originalError) {
-  const stableError = createStableError(originalError as Error, {
+  if (!(originalError instanceof Error)) {
+    throw originalError;
+  }
+
+  const stableError = createStableError(originalError, {
     category: "conversion",
     severity: "medium",
     metadata: { source: "try-catch" },
   });
 
-  console.log("Original error name:", (originalError as Error).name);
+  console.log("Original error name:", originalError.name);
   console.log("Stable error name:", stableError.name);
   console.log("Stable error message:", stableError.message);
   console.log("Stable error category:", stableError.category);
   console.log("Stable error metadata:", stableError.metadata);
   console.log("Has original stack:", stableError.metadata.originalStack !== undefined);
 }
+
 console.log();
 
 console.log("8b. Using createStableError with Error object:");
+
 try {
   throw new Error("Another error message");
 } catch (originalError) {
-  const stableError = createStableError(originalError as Error, {
+  if (!(originalError instanceof Error)) {
+    throw originalError;
+  }
+
+  const stableError = createStableError(originalError, {
     category: "convenience",
     severity: "low",
     metadata: { source: "fromError" },
@@ -171,17 +220,22 @@ try {
   console.log("Stable error category:", stableError.category);
   console.log("Stable error severity:", stableError.severity);
 }
+
 console.log();
 
 console.log("9. JSON Serialization:");
+
 const jsonError = createStableError("JSON test error", {
   category: "serialization",
   metadata: { test: true, count: 42 },
 });
 
 const json = jsonError.toJSON();
+
 console.log("JSON representation:");
+
 console.log(JSON.stringify(json, null, 2));
+
 console.log();
 
 console.log("=== Basic Usage Examples Complete ===");
