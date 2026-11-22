@@ -4,11 +4,19 @@ import {
   generateStableId,
   normalizeMessage,
   filterMetadata,
-  type StableErrorOptions,
-  type ErrorSeverity,
 } from "./stable-error.ts";
+import type { StableErrorOptions, ErrorSeverity } from "./stable-error.ts";
 
-describe("normalizeMessage", () => {
+/**
+ * JavaScript callers are not held to the declared parameter types, and the library guards against
+ * the values they can still pass
+ */
+const bypassTypes = (value: null | undefined): never =>
+  // SAFETY: the value only reaches runtime guards that accept null and undefined
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the test needs a value the signature rejects
+  value as never;
+
+describe(normalizeMessage, () => {
   it("should normalize basic messages", () => {
     expect(normalizeMessage("User not found")).toBe("user not found");
     expect(normalizeMessage("  USER NOT FOUND  ")).toBe("user not found");
@@ -35,12 +43,12 @@ describe("normalizeMessage", () => {
 
   it("should handle empty or invalid input", () => {
     expect(normalizeMessage("")).toBe("");
-    expect(normalizeMessage(null as unknown as string)).toBe("");
-    expect(normalizeMessage(undefined as unknown as string)).toBe("");
+    expect(normalizeMessage(bypassTypes(null))).toBe("");
+    expect(normalizeMessage(bypassTypes(undefined))).toBe("");
   });
 });
 
-describe("filterMetadata", () => {
+describe(filterMetadata, () => {
   it("should filter to only allowed keys", () => {
     const metadata = {
       type: "validation",
@@ -51,16 +59,16 @@ describe("filterMetadata", () => {
     };
 
     const filtered = filterMetadata(metadata);
-    expect(filtered).toEqual({
+    expect(filtered).toStrictEqual({
       type: "validation",
       field: "email",
     });
   });
 
   it("should handle empty metadata", () => {
-    expect(filterMetadata({})).toEqual({});
-    expect(filterMetadata(null as unknown as Record<string, unknown>)).toEqual({});
-    expect(filterMetadata(undefined as unknown as Record<string, unknown>)).toEqual({});
+    expect(filterMetadata({})).toStrictEqual({});
+    expect(filterMetadata(bypassTypes(null))).toStrictEqual({});
+    expect(filterMetadata(bypassTypes(undefined))).toStrictEqual({});
   });
 
   it("should exclude null and undefined values", () => {
@@ -72,21 +80,23 @@ describe("filterMetadata", () => {
     };
 
     const filtered = filterMetadata(metadata);
-    expect(filtered).toEqual({
+    expect(filtered).toStrictEqual({
       type: "validation",
       service: "api",
     });
   });
 });
 
-describe("generateStableId", () => {
+describe(generateStableId, () => {
   it("should generate consistent IDs for same input", () => {
     const id1 = generateStableId("User not found", "validation", {
       field: "email",
     });
+
     const id2 = generateStableId("User not found", "validation", {
       field: "email",
     });
+
     expect(id1).toBe(id2);
   });
 
@@ -106,30 +116,56 @@ describe("generateStableId", () => {
     const id1 = generateStableId("User not found", "validation", {
       field: "email",
     });
+
     const id2 = generateStableId("User not found", "validation", {
       field: "username",
     });
+
     expect(id1).not.toBe(id2);
   });
 
   it("should generate 8-character hex IDs", () => {
     const id = generateStableId("Test message", "test", {});
-    expect(id).toMatch(/^[0-9a-f]{8}$/);
+    expect(id).toMatch(/^[0-9a-f]{8}$/u);
+  });
+
+  it.each([
+    ["User not found", "validation", { field: "email" }, "1d40d2a1"],
+    [
+      "User 550e8400-E29B-41d4-a716-446655440000 at 2023-01-01T10:00:00.123Z took 1672531200000 ms",
+      "Database",
+      { service: "api", userId: 1, code: 42 },
+      "0acb84f8",
+    ],
+    ["Ünïcödé 😀 ſtring with \u212A and ẞ", "", {}, "76b81b5d"],
+    ["x".repeat(500), "general", { type: null, operation: "op", component: undefined }, "1285f1c8"],
+  ])("should keep the ID of %s from earlier releases", (message, category, metadata, id) => {
+    expect(generateStableId(message, category, metadata)).toBe(id);
   });
 });
 
-describe("createStableError", () => {
+describe(createStableError, () => {
   it("should create error with string message", () => {
     const error = createStableError("Test error");
 
     expect(error.message).toBe("Test error");
     expect(error.name).toBe("StableError");
-    expect(error.id).toMatch(/^[0-9a-f]{8}$/);
+    expect(error.id).toMatch(/^[0-9a-f]{8}$/u);
+  });
+
+  it("should apply the default options", () => {
+    const error = createStableError("Test error");
+
     expect(error.category).toBe("general");
     expect(error.severity).toBe("medium");
-    expect(error.metadata).toEqual({});
+    expect(error.metadata).toStrictEqual({});
     expect(error.statusCode).toBe(500);
-    expect(typeof error.timestamp).toBe("string");
+  });
+
+  it("should set a timestamp", () => {
+    const error = createStableError("Test error");
+
+    expect(error.timestamp).toBeTypeOf("string");
     expect(new Date(error.timestamp)).toBeInstanceOf(Date);
   });
 
@@ -145,7 +181,7 @@ describe("createStableError", () => {
     expect(error.message).toBe("Validation failed");
     expect(error.category).toBe("validation");
     expect(error.severity).toBe("high");
-    expect(error.metadata).toEqual({
+    expect(error.metadata).toStrictEqual({
       field: "email",
       type: "required",
     });
@@ -164,12 +200,22 @@ describe("createStableError", () => {
     expect(stableError.message).toBe("Original message");
     expect(stableError.name).toBe("StableError");
     expect(stableError.category).toBe("conversion");
-    expect(stableError.metadata).toEqual({
+    expect(stableError.metadata).toStrictEqual({
       source: "test",
       originalName: "OriginalError",
       originalStack: originalError.stack,
     });
     expect(stableError.statusCode).toBe(500);
+  });
+
+  it("should keep the original stack of an Error converted with options", () => {
+    const originalError = new Error("Original message");
+
+    const stableError = createStableError(originalError, {
+      category: "conversion",
+      metadata: { source: "test" },
+    });
+
     expect(stableError.stack).toBe(originalError.stack);
   });
 
@@ -177,6 +223,7 @@ describe("createStableError", () => {
     const error1 = createStableError("User 123 not found", {
       category: "test",
     });
+
     const error2 = createStableError("User 456 not found", {
       category: "test",
     });
@@ -193,7 +240,7 @@ describe("createStableError", () => {
 
     const json = error.toJSON();
 
-    expect(json).toEqual({
+    expect(json).toStrictEqual({
       id: error.id,
       message: "Test error",
       category: "test",
@@ -216,15 +263,15 @@ describe("createStableError", () => {
   it("should handle all severity levels", () => {
     const severities: ErrorSeverity[] = ["low", "medium", "high", "critical"];
 
-    severities.forEach((severity) => {
+    for (const severity of severities) {
       const error = createStableError("Test error", { severity });
       expect(error.severity).toBe(severity);
-    });
+    }
   });
 
   it("should preserve original stack when converting from Error", () => {
     const originalError = new Error("Test");
-    const stack = originalError.stack;
+    const { stack } = originalError;
 
     const stableError = createStableError(originalError);
     expect(stableError.stack).toBe(stack);
